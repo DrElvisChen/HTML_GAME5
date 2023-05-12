@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Space Invaders</title>
+<style>
+#gameCanvas {
+background-color: #000000;
+border: 2px solid #ffffff;
+}
+</style>
+</head>
+<body>
+<canvas id="gameCanvas" width="480" height="600"></canvas>
+<script>
+
+
+// Get the canvas and context
+const canvas = document.getElementById("gameCanvas");
+const context = canvas.getContext("2d");
+// Define the bullet class
+class Bullet {
+  constructor(x, y, speed) {
+    this.x = x;
+    this.y = y;
+    this.speed = speed;
+    this.width = 2;
+    this.height = 10;
+  }
+
+  // Update the position of the bullet
+  update() {
+    this.y += this.speed;
+  }
+
+  // Draw the bullet
+  draw() {
+    context.beginPath();
+    context.rect(this.x, this.y, this.width, this.height);
+    context.fillStyle = "#ffffff";
+    context.fill();
+    context.closePath();
+  }
+}
+
+// Define the alien bullet class
+class AlienBullet extends Bullet {
+  constructor(x, y, speed) {
+    super(x, y, speed);
+  }
+
+  // Update the position of the alien bullet
+  update() {
+    this.y += this.speed;
+  }
+  // Draw the bullet
+  draw() {
+    context.beginPath();
+    context.rect(this.x, this.y, this.width, this.height);
+    context.fillStyle = "#ff0000"; // Changed the color to red
+    context.fill();
+    context.closePath();
+  }
+  
+}
+
+// Define the Player class
+class Player {
+  constructor() {
+    this.x = canvas.width / 2;
+    this.y = canvas.height - 30;
+    this.speed = 5; // Make player faster
+    this.bulletSpeed = -5;
+    this.width = 20;
+    this.height = 20;
+    this.bullets = [];
+  }
+  
+  // Move the player up
+  moveUp() {
+    this.y -= this.speed;
+  }
+
+  // Move the player down
+  moveDown() {
+    this.y += this.speed;
+  }
+  // Draw the player
+  draw() {
+    context.beginPath();
+    context.rect(this.x, this.y, this.width, this.height);
+    context.fillStyle = "#ff0000";
+    context.fill();
+    context.closePath();
+  }
+
+  // Draw the player's bullets
+  drawBullets() {
+    for (let i = 0; i < this.bullets.length; i++) {
+      this.bullets[i].draw();
+    }
+  }
+
+  // Update the player's bullets
+  updateBullets() {
+    for (let i = 0; i < this.bullets.length; i++) {
+      const bullet = this.bullets[i];
+
+      // Check if bullet is off the canvas or reaches a limit
+      if (
+        bullet.y > canvas.height ||
+        bullet.y < -bullet.height // Limit the bullet range to prevent excessive bullets
+      ) {
+        this.bullets.splice(i, 1); // Remove the bullet
+        i--; // Adjust the index to account for the removed bullet
+      } else {
+        bullet.update(); // Update bullet position
+      }
+    }
+  }
+
+  // Move the player to the left
+  moveLeft() {
+    this.x -= this.speed;
+  }
+
+  // Move the player to the right
+  moveRight() {
+    this.x += this.speed;
+  }
+
+  // The player shoots a bullet
+  shoot() {
+    let bullet = new Bullet(this.x + this.width / 2, this.y, this.bulletSpeed);
+    this.bullets.push(bullet);
+  }
+}
+
+// Define the alien class
+class Alien {
+  constructor(x, y, speed) {
+    this.x = x;
+    this.y = y;
+    this.speed = speed;
+    this.bulletSpeed = 2;
+    this.width = 20;
+    this.height = 20;
+    this.isDead = false;
+    this.bullets = [];
+  }
+
+  // Draw the alien
+    draw() {
+    context.beginPath();
+    context.rect(this.x, this.y, this.width, this.height);
+    context.fillStyle = "#00ff00";
+    context.fill();
+    context.closePath();
+  }
+
+  // Move the alien
+  move() {
+    this.x += this.speed;
+    if (this.x + this.width > canvas.width || this.x < 0) {
+      this.speed = -this.speed;
+      this.y += this.height;
+    }
+  }
+
+  // Kill the alien
+  die() {
+    this.isDead = true;
+  }
+
+  // Alien shoots a bullet
+  shoot() {
+    let bullet = new AlienBullet(this.x + this.width / 2, this.y, this.bulletSpeed);
+    this.bullets.push(bullet);
+  }
+
+  // Draw the alien's bullets
+  drawBullets() {
+    for (let i = 0; i < this.bullets.length; i++) {
+      this.bullets[i].draw();
+    }
+  }
+
+  // Update the alien's bullets
+  updateBullets() {
+    for (let i = 0; i < this.bullets.length; i++) {
+      this.bullets[i].update();
+    }
+  }
+}
+
+// Initialize the game variables
+let player = new Player();
+let aliens = [];
+let alienRows = 5;
+let alienCols = 10;
+let alienWidth = 20;
+let alienHeight = 20;
+let alienGap = 10;
+let alienSpeed = 1;
+let score = 0;
+let gameOver = false;
+let level = 1;
+
+// Create the aliens
+for (let i = 0; i < alienRows; i++) {
+  aliens[i] = [];
+  for (let j = 0; j < alienCols; j++) {
+    let x = j * (alienWidth + alienGap) + alienGap;
+    let y = i * (alienHeight + alienGap) + alienGap;
+    aliens[i][j] = new Alien(x, y, alienSpeed);
+  }
+}
+
+// Check for collision between two objects
+function collisionDetection(bullet, alien) {
+  if (
+    bullet.x < alien.x + alien.width &&
+    bullet.x + bullet.width > alien.x &&
+    bullet.y < alien.y + alien.height &&
+    bullet.y + bullet.height > alien.y
+  ) {
+    return true;
+  }
+  return false;
+}
+// Draw the game elements
+function draw() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  player.draw();
+  player.drawBullets();
+
+  for (let i = 0; i < alienRows; i++) {
+    for (let j = 0; j < alienCols; j++) {
+      if (!aliens[i][j].isDead) {
+        aliens[i][j].draw();
+        aliens[i][j].drawBullets();
+      }
+    }
+  }
+
+  // Display the score
+  context.font = "16px Arial";
+  context.fillStyle = "#FFFFFF";
+  context.fillText("Score: " + score, 8, 20);
+}
+
+// Update the game logic
+// Update the game logic
+function update() {
+  player.updateBullets();
+
+  let allAliensDead = true;
+  for (let i = 0; i < alienRows; i++) {
+    for (let j = 0; j < alienCols; j++) {
+      if (!aliens[i][j].isDead) {
+        allAliensDead = false;
+        aliens[i][j].move();
+        aliens[i][j].updateBullets();
+
+        // Check for bullet-alien collisions
+        for (let k = 0; k < player.bullets.length; k++) {
+          const playerBullet = player.bullets[k];
+          if (collisionDetection(playerBullet, aliens[i][j])) {
+            aliens[i][j].die();
+            score++; // Increase the score
+            player.bullets.splice(k, 1); // Remove the bullet from the player's bullet array
+            break;
+          }
+        }
+
+        // Check for alien bullet-player collisions
+        for (let k = 0; k < aliens[i][j].bullets.length; k++) {
+          const alienBullet = aliens[i][j].bullets[k];
+          if (collisionDetection(alienBullet, player)) {
+            gameOver = true;
+            break;
+          }
+        }
+
+        // Check if aliens have reached the bottom
+        if (aliens[i][j].y + aliens[i][j].height >= canvas.height) {
+          gameOver = true;
+        }
+      }
+    }
+  }
+
+  // If all aliens are dead, go to the next level
+  if (allAliensDead) {
+    level++;
+    alienSpeed++;
+    // Create new aliens
+    for (let i = 0; i < alienRows; i++) {
+      aliens[i] = [];
+      for (let j = 0; j < alienCols; j++) {
+        let x = j * (alienWidth + alienGap) + alienGap;
+        let y = i * (alienHeight + alienGap) + alienGap;
+        aliens[i][j] = new Alien(x, y, alienSpeed);
+      }
+    }
+  }
+}
+
+// Check for alien bullet-player collisions
+function handleGameOver() {
+  if (gameOver) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.font = "30px Arial";
+    context.fillStyle = "#FFFFFF";
+    context.fillText("Game Over!", canvas.width / 2 - 50, canvas.height / 2);
+    context.fillText("Press any key to restart", canvas.width / 2 - 110, canvas.height / 2 + 30);
+  }
+}
+
+
+
+
+// Function to make an alien shoot at the player
+// Function to make an alien shoot at the player
+function alienShootPlayer() {
+  // Select a random alien that is not dead
+  let activeAliens = [];
+
+  for (let i = 0; i < alienRows; i++) {
+    for (let j = 0; j < alienCols; j++) {
+      if (!aliens[i][j].isDead) {
+        activeAliens.push(aliens[i][j]);
+      }
+    }
+  }
+
+  if (activeAliens.length > 0) {
+    let randomAlien = activeAliens[Math.floor(Math.random() * activeAliens.length)];
+    // Add randomness: only 10% chance an alien will shoot
+    if (Math.random() < 0.1) {
+      randomAlien.shoot();
+    }
+  }
+}
+
+
+// Handle keyboard input
+// Handle keyboard input
+// Handle keyboard input
+document.addEventListener("keydown", event => {
+  switch(event.keyCode) {
+    case 37: // Left arrow key
+      player.moveLeft();
+      break;
+    case 39: // Right arrow key
+      player.moveRight();
+      break;
+    case 38: // Up arrow key
+      player.moveUp();
+      break;
+    case 40: // Down arrow key
+      player.moveDown();
+      break;
+    case 32: // Space bar
+      player.shoot();
+      break;
+  }
+});
+
+
+
+// Main game loop
+// Main game loop
+function gameLoop() {
+  if (!gameOver) {
+    draw();
+    update();
+    alienShootPlayer(); // Make an alien shoot at the player
+  } else {
+    handleGameOver();
+  }
+  
+  requestAnimationFrame(gameLoop);
+}
+
+// Start the game loop
+gameLoop();
+</script>
+</body>
+</html>
