@@ -321,16 +321,17 @@ function update() {
 }
 
 // Check for alien bullet-player collisions
+// Check for alien bullet-player collisions
 function handleGameOver() {
   if (gameOver) {
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.font = "30px Arial";
     context.fillStyle = "#FFFFFF";
     context.fillText("Game Over!", canvas.width / 2 - 50, canvas.height / 2);
-    context.fillText("Press F5 to restart", canvas.width / 2 - 110, canvas.height / 2 + 30);
+    context.fillText("Final Score: " + score, canvas.width / 2 - 70, canvas.height / 2 + 40);
+    context.fillText("Press F5 to restart", canvas.width / 2 - 110, canvas.height / 2 + 80);
   }
 }
-
 
 
 
