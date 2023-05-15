@@ -76,15 +76,36 @@ class Player {
     this.bullets = [];
   }
   
+ // Move the player up
   // Move the player up
-  moveUp() {
-    this.y -= this.speed;
+   // Move the player up
+    moveUp() {
+    if (this.y - this.speed >= 0) {
+      this.y -= this.speed;
+    }
   }
 
   // Move the player down
   moveDown() {
-    this.y += this.speed;
+    if (this.y + this.height + this.speed <= canvas.height) {
+      this.y += this.speed;
+    }
   }
+
+  // Move the player to the left
+  moveLeft() {
+    if (this.x - this.speed >= 0) {
+      this.x -= this.speed;
+    }
+  }
+
+  // Move the player to the right
+  moveRight() {
+    if (this.x + this.width + this.speed <= canvas.width) {
+      this.x += this.speed;
+    }
+  }
+
   // Draw the player
   draw() {
     context.beginPath();
@@ -119,15 +140,7 @@ class Player {
     }
   }
 
-  // Move the player to the left
-  moveLeft() {
-    this.x -= this.speed;
-  }
 
-  // Move the player to the right
-  moveRight() {
-    this.x += this.speed;
-  }
 
   // The player shoots a bullet
   shoot() {
