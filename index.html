@@ -144,7 +144,7 @@ class Alien {
     this.x = x;
     this.y = y;
     this.speed = speed;
-    this.bulletSpeed = 2;
+    this.bulletSpeed = 4;
     this.width = 20;
     this.height = 20;
     this.isDead = false;
@@ -198,7 +198,7 @@ class Alien {
 // Initialize the game variables
 let player = new Player();
 let aliens = [];
-let alienRows = 5;
+let alienRows = 7;
 let alienCols = 10;
 let alienWidth = 20;
 let alienHeight = 20;
@@ -206,7 +206,7 @@ let alienGap = 10;
 let alienSpeed = 1;
 let score = 0;
 let gameOver = false;
-let level = 1;
+let level = 4;
 
 // Create the aliens
 for (let i = 0; i < alienRows; i++) {
@@ -321,7 +321,6 @@ function update() {
 }
 
 // Check for alien bullet-player collisions
-// Check for alien bullet-player collisions
 function handleGameOver() {
   if (gameOver) {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -332,6 +331,7 @@ function handleGameOver() {
     context.fillText("Press F5 to restart", canvas.width / 2 - 110, canvas.height / 2 + 80);
   }
 }
+
 
 
 
