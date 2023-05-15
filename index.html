@@ -131,8 +131,10 @@ class Player {
 
   // The player shoots a bullet
   shoot() {
+    if (this.bullets.length < 5) {
     let bullet = new Bullet(this.x + this.width / 2, this.y, this.bulletSpeed);
     this.bullets.push(bullet);
+  }
   }
 }
 
@@ -251,6 +253,7 @@ function draw() {
 
 // Update the game logic
 // Update the game logic
+// Update the game logic
 function update() {
   player.updateBullets();
 
@@ -273,12 +276,23 @@ function update() {
           }
         }
 
-        // Check for alien bullet-player collisions
+        // Check for alien bullet-player collisions and bullet-bullet collisions
         for (let k = 0; k < aliens[i][j].bullets.length; k++) {
           const alienBullet = aliens[i][j].bullets[k];
+          
           if (collisionDetection(alienBullet, player)) {
             gameOver = true;
             break;
+          }
+
+          // Check for bullet-bullet collisions
+          for (let l = 0; l < player.bullets.length; l++) {
+            const playerBullet = player.bullets[l];
+            if (collisionDetection(playerBullet, alienBullet)) {
+              player.bullets.splice(l, 1); // Remove the bullet from the player's bullet array
+              aliens[i][j].bullets.splice(k, 1); // Remove the bullet from the alien's bullet array
+              break;
+            }
           }
         }
 
